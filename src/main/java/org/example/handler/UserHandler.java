@@ -1,102 +1,156 @@
 package org.example.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.example.domain.User;
+import org.example.domain.UserProfileResponse;
+import org.example.domain.UserProfileUpdate;
+import org.example.http.HttpUtil;
+import org.example.service.FavoriteService;
+import org.example.service.RatingService;
 import org.example.service.UserService;
+import org.example.service.RecommendationService;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
+// Handler für User-bezogene Endpunkte (Profil, Ratings, Favorites, Recommendations).
 public class UserHandler implements HttpHandler {
-
-    // Service für Business-Logik
+    // Services für Business-Logik.
     private final UserService userService;
+    private final RatingService ratingService;
+    private final FavoriteService favoriteService;
+    private final RecommendationService recommendationService;
 
-    // ObjectMapper wandelt JSON ↔ Java Objekte um
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    // Constructor: Bekommt den Service (nicht mehr das Repository!)
-    public UserHandler(UserService userService) {
+    public UserHandler(UserService userService, RatingService ratingService, FavoriteService favoriteService,
+                       RecommendationService recommendationService) {
         this.userService = userService;
+        this.ratingService = ratingService;
+        this.favoriteService = favoriteService;
+        this.recommendationService = recommendationService;
     }
 
+    // Routing basierend auf dem Pfadende (z. B. /profile).
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
-        if (method.equals("POST")) {
+        int userId;
+        try {
+            userId = extractUserId(path);
+        } catch (Exception e) {
+            HttpUtil.sendError(exchange, 400, "Ungültige User-ID");
+            return;
+        }
 
-            if (path.equals("/api/users/login")) {
-                handleLogin(exchange);
-            } else {
-                handleRegistration(exchange);
+        User authUser = (User) exchange.getAttribute("authUser");
+        if (authUser == null) {
+            HttpUtil.sendError(exchange, 401, "Nicht eingeloggt");
+            return;
+        }
+        if (authUser.getId() != userId) {
+            HttpUtil.sendError(exchange, 403, "Kein Zugriff auf fremdes Profil");
+            return;
+        }
+
+        if (path.endsWith("/profile")) {
+            handleProfile(exchange, method, userId);
+            return;
+        }
+
+        if (path.endsWith("/ratings")) {
+            handleRatings(exchange, method, userId);
+            return;
+        }
+
+        if (path.endsWith("/favorites")) {
+            handleFavorites(exchange, method, userId);
+            return;
+        }
+
+        if (path.endsWith("/recommendations")) {
+            handleRecommendations(exchange, method, userId);
+            return;
+        }
+
+        HttpUtil.sendError(exchange, 404, "Not Found");
+    }
+
+    // GET/PUT /profile (Logik folgt spaeter im Service).
+    private void handleProfile(HttpExchange exchange, String method, int userId) throws IOException {
+        if (method.equals("GET")) {
+            try {
+                UserProfileResponse profile = userService.getProfile(userId);
+                HttpUtil.sendJson(exchange, 200, profile);
+            } catch (Exception e) {
+                HttpUtil.sendError(exchange, 404, e.getMessage());
             }
-
-        } else {
-            sendResponse(exchange, 405, "Method Not Allowed");
+            return;
         }
+        if (method.equals("PUT")) {
+            UserProfileUpdate update = HttpUtil.readJson(exchange, UserProfileUpdate.class);
+            try {
+                userService.updateProfile(userId, update);
+                UserProfileResponse profile = userService.getProfile(userId);
+                HttpUtil.sendJson(exchange, 200, profile);
+            } catch (Exception e) {
+                HttpUtil.sendError(exchange, 400, e.getMessage());
+            }
+            return;
+        }
+        HttpUtil.sendError(exchange, 405, "Method Not Allowed");
     }
 
-    // ========================================
-    // REGISTRATION - nur HTTP, keine Business-Logik
-    // ========================================
-    private void handleRegistration(HttpExchange exchange) throws IOException {
-
-        // 1. JSON lesen
-        InputStream requestBody = exchange.getRequestBody();
-        User user = objectMapper.readValue(requestBody, User.class);
-
-        try {
-            // 2. Service aufrufen (der macht die Business-Logik)
-            User savedUser = userService.register(user);
-
-            // 3. Erfolg - User zurückschicken
-            String jsonResponse = objectMapper.writeValueAsString(savedUser);
-            sendResponse(exchange, 201, jsonResponse);
-
-        } catch (Exception e) {
-            // Fehler vom Service - Fehlermeldung zurückschicken
-            sendResponse(exchange, 400, e.getMessage());
+    // GET /ratings (Logik folgt spaeter im Service).
+    private void handleRatings(HttpExchange exchange, String method, int userId) throws IOException {
+        if (method.equals("GET")) {
+            try {
+                HttpUtil.sendJson(exchange, 200, ratingService.getRatingsByUser(userId));
+            } catch (Exception e) {
+                HttpUtil.sendError(exchange, 400, e.getMessage());
+            }
+            return;
         }
+        HttpUtil.sendError(exchange, 405, "Method Not Allowed");
     }
 
-    // ========================================
-    // LOGIN - nur HTTP, keine Business-Logik
-    // ========================================
-    private void handleLogin(HttpExchange exchange) throws IOException {
-
-        // 1. JSON lesen
-        InputStream requestBody = exchange.getRequestBody();
-        User loginData = objectMapper.readValue(requestBody, User.class);
-
-        try {
-            // 2. Service aufrufen (der macht die Business-Logik)
-            String token = userService.login(loginData.getUsername(), loginData.getPassword());
-
-            // 3. Erfolg - Token zurückschicken
-            String jsonResponse = "{\"token\": \"" + token + "\"}";
-            sendResponse(exchange, 200, jsonResponse);
-
-        } catch (Exception e) {
-            // Fehler vom Service - Fehlermeldung zurückschicken
-            sendResponse(exchange, 401, e.getMessage());
+    // GET /favorites (Logik folgt spaeter im Service).
+    private void handleFavorites(HttpExchange exchange, String method, int userId) throws IOException {
+        if (method.equals("GET")) {
+            try {
+                HttpUtil.sendJson(exchange, 200, favoriteService.getFavoritesByUser(userId));
+            } catch (Exception e) {
+                HttpUtil.sendError(exchange, 400, e.getMessage());
+            }
+            return;
         }
+        HttpUtil.sendError(exchange, 405, "Method Not Allowed");
     }
 
-    // ========================================
-    // HILFSMETHODE - Antwort senden
-    // ========================================
-    private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, response.getBytes().length);
+    // GET /recommendations (Logik folgt spaeter im Service).
+    private void handleRecommendations(HttpExchange exchange, String method, int userId) throws IOException {
+        if (method.equals("GET")) {
+            String query = exchange.getRequestURI().getQuery();
+            var params = HttpUtil.parseQuery(query);
+            String type = params.get("type");
 
-        OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+            try {
+                if ("content".equalsIgnoreCase(type)) {
+                    HttpUtil.sendJson(exchange, 200, recommendationService.recommendByContent(userId));
+                } else {
+                    HttpUtil.sendJson(exchange, 200, recommendationService.recommendByGenre(userId));
+                }
+            } catch (Exception e) {
+                HttpUtil.sendError(exchange, 400, e.getMessage());
+            }
+            return;
+        }
+        HttpUtil.sendError(exchange, 405, "Method Not Allowed");
+    }
+
+    // /api/users/{id}/... -> {id}
+    private int extractUserId(String path) {
+        String[] parts = path.split("/");
+        return Integer.parseInt(parts[parts.length - 2]);
     }
 }

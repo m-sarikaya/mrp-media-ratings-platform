@@ -1,15 +1,26 @@
 package org.example.service;
 
 import org.example.domain.User;
+import org.example.domain.UserProfileResponse;
+import org.example.domain.UserProfileUpdate;
+import org.example.persistence.RatingRepository;
 import org.example.persistence.UserRepository;
 
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RatingRepository ratingRepository;
 
     // Constructor: Bekommt das Repository
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.ratingRepository = null;
+    }
+
+    // Constructor mit RatingRepository für Profil-Statistiken.
+    public UserService(UserRepository userRepository, RatingRepository ratingRepository) {
+        this.userRepository = userRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     // ========================================
@@ -83,5 +94,36 @@ public class UserService {
     // ========================================
     public User findByToken(String token) {
         return userRepository.findByToken(token);
+    }
+
+    // Profil-Daten laden (inkl. Statistiken).
+    public UserProfileResponse getProfile(int userId) throws Exception {
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw new Exception("User nicht gefunden");
+        }
+
+        UserProfileResponse response = new UserProfileResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setFavoriteGenre(user.getFavoriteGenre());
+
+        if (ratingRepository != null) {
+            try {
+                response.setTotalRatings(ratingRepository.countByUser(userId));
+                response.setAverageScore(ratingRepository.averageByUser(userId));
+            } catch (Exception e) {
+                response.setTotalRatings(0);
+                response.setAverageScore(0.0);
+            }
+        }
+
+        return response;
+    }
+
+    // Profil updaten (nur erlaubte Felder).
+    public void updateProfile(int userId, UserProfileUpdate update) throws Exception {
+        userRepository.updateProfile(userId, update.getEmail(), update.getFavoriteGenre());
     }
 }

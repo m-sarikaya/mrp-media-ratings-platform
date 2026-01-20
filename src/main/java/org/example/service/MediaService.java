@@ -27,17 +27,32 @@ public class MediaService {
             throw new Exception("MediaType ist erforderlich (MOVIE, SERIES, GAME)");
         }
 
-        // 2. MediaType prüfen
+        // 2. Genres pruefen (mindestens 1, keine leeren Eintraege)
+        if (media.getGenres() == null || media.getGenres().isEmpty()) {
+            throw new Exception("Mindestens ein Genre ist erforderlich");
+        }
+        var normalizedGenres = new java.util.ArrayList<String>();
+        for (String g : media.getGenres()) {
+            if (g != null && !g.isBlank()) {
+                normalizedGenres.add(g);
+            }
+        }
+        if (normalizedGenres.isEmpty()) {
+            throw new Exception("Mindestens ein Genre ist erforderlich");
+        }
+        media.setGenres(normalizedGenres);
+
+        // 3. MediaType prüfen
         String type = media.getMediaType().toUpperCase();
         if (!type.equals("MOVIE") && !type.equals("SERIES") && !type.equals("GAME")) {
             throw new Exception("MediaType muss MOVIE, SERIES oder GAME sein");
         }
         media.setMediaType(type);
 
-        // 3. Creator setzen
+        // 4. Creator setzen
         media.setCreatorId(creatorId);
 
-        // 4. Speichern
+        // 5. Speichern
         MediaEntry saved = mediaRepository.save(media);
 
         if (saved == null) {
@@ -52,6 +67,14 @@ public class MediaService {
     // ========================================
     public List<MediaEntry> getAll() {
         return mediaRepository.findAll();
+    }
+
+    // ========================================
+    // SEARCH - Medien filtern/sortieren
+    // ========================================
+    public List<MediaEntry> search(String title, String genre, String mediaType, Integer releaseYear,
+                                   Integer ageRestriction, Double rating, String sortBy) {
+        return mediaRepository.search(title, genre, mediaType, releaseYear, ageRestriction, rating, sortBy);
     }
 
     // ========================================
@@ -97,8 +120,16 @@ public class MediaService {
         if (updatedMedia.getReleaseYear() != 0) {
             existingMedia.setReleaseYear(updatedMedia.getReleaseYear());
         }
-        if (updatedMedia.getGenre() != null) {
-            existingMedia.setGenre(updatedMedia.getGenre());
+        if (updatedMedia.getGenres() != null && !updatedMedia.getGenres().isEmpty()) {
+            var normalizedGenres = new java.util.ArrayList<String>();
+            for (String g : updatedMedia.getGenres()) {
+                if (g != null && !g.isBlank()) {
+                    normalizedGenres.add(g);
+                }
+            }
+            if (!normalizedGenres.isEmpty()) {
+                existingMedia.setGenres(normalizedGenres);
+            }
         }
         if (updatedMedia.getAgeRestriction() != 0) {
             existingMedia.setAgeRestriction(updatedMedia.getAgeRestriction());

@@ -61,6 +61,8 @@ public class UserRepository {
                         .username(rs.getString("username"))
                         .password(rs.getString("password"))
                         .token(rs.getString("token"))
+                        .email(rs.getString("email"))
+                        .favoriteGenre(rs.getString("favoritegenre"))
                         .build();
             }
 
@@ -106,6 +108,8 @@ public class UserRepository {
                         .username(rs.getString("username"))
                         .password(rs.getString("password"))
                         .token(rs.getString("token"))
+                        .email(rs.getString("email"))
+                        .favoriteGenre(rs.getString("favoritegenre"))
                         .build();
             }
 
@@ -114,5 +118,48 @@ public class UserRepository {
         }
 
         return null;
+    }
+
+    // User anhand ID finden (Profil).
+    public User findById(int userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return User.builder()
+                        .id(rs.getInt("id"))
+                        .username(rs.getString("username"))
+                        .password(rs.getString("password"))
+                        .token(rs.getString("token"))
+                        .email(rs.getString("email"))
+                        .favoriteGenre(rs.getString("favoritegenre"))
+                        .build();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Fehler beim Suchen: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    // Profilfelder aktualisieren.
+    public void updateProfile(int userId, String email, String favoriteGenre) {
+        String sql = "UPDATE users SET email = ?, favoritegenre = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, favoriteGenre);
+            stmt.setInt(3, userId);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Fehler beim Profil-Update: " + e.getMessage());
+        }
     }
 }

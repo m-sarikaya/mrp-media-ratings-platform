@@ -1,5 +1,8 @@
 package org.example.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MediaEntry {
 
     private int id;
@@ -7,7 +10,7 @@ public class MediaEntry {
     private String description;
     private String mediaType;      // MOVIE, SERIES, GAME
     private int releaseYear;
-    private String genre;
+    private List<String> genres = new ArrayList<>();
     private int ageRestriction;
     private int creatorId;         // Welcher User hat es erstellt
 
@@ -37,8 +40,8 @@ public class MediaEntry {
         return releaseYear;
     }
 
-    public String getGenre() {
-        return genre;
+    public List<String> getGenres() {
+        return genres;
     }
 
     public int getAgeRestriction() {
@@ -71,8 +74,8 @@ public class MediaEntry {
         this.releaseYear = releaseYear;
     }
 
-    public void setGenre(String genre) {
-        this.genre = genre;
+    public void setGenres(List<String> genres) {
+        this.genres = genres;
     }
 
     public void setAgeRestriction(int ageRestriction) {

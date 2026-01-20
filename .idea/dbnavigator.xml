@@ -43,6 +43,8 @@
     <open-files>
       <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/users" />
       <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/mediaentries" />
+      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/rating_likes" />
+      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/ratings" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
@@ -57,7 +59,14 @@
         <condition column="id" operator="=" value="" active="true" />
       </filter>
     </filter-actions>
+    <filter-actions connection-id="4fffdce7-6082-4cec-a847-669749a575ef" dataset="public.ratings" active-filter-id="EMPTY_FILTER">
+      <filter id="cd873280-504e-4a2b-aabe-aa5958b6ab62" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="id" operator="=" value="" active="true" />
+      </filter>
+    </filter-actions>
+    <filter-actions connection-id="4fffdce7-6082-4cec-a847-669749a575ef" dataset="public.rating_likes" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="4fffdce7-6082-4cec-a847-669749a575ef" dataset="public.mediaentries" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="4fffdce7-6082-4cec-a847-669749a575ef" dataset="public.favorites" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />

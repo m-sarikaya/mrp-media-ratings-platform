@@ -32,6 +32,12 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.17.0</version>
         </dependency>
+        <!-- Jackson Java-Time Modul für LocalDateTime -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.17.0</version>
+        </dependency>
 
         <!-- JUnit 5 - für Unit Tests -->
         <dependency>

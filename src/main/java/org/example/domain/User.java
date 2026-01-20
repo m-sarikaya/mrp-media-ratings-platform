@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
     private int id;
     private String username;
+    private String email;
+    private String favoriteGenre;
 
     //kann empfangen, aber nie gesendet werden (Sicherheit)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -28,6 +30,14 @@ public class User {
         return username;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getFavoriteGenre() {
+        return favoriteGenre;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -44,6 +54,14 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setFavoriteGenre(String favoriteGenre) {
+        this.favoriteGenre = favoriteGenre;
     }
 
     public void setPassword(String password) {
@@ -90,6 +108,16 @@ public class User {
 
         public UserBuilder token(String token) {
             user.token = token;
+            return this;
+        }
+
+        public UserBuilder email(String email) {
+            user.email = email;
+            return this;
+        }
+
+        public UserBuilder favoriteGenre(String favoriteGenre) {
+            user.favoriteGenre = favoriteGenre;
             return this;
         }
 
