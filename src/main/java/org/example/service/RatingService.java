@@ -102,10 +102,6 @@ public class RatingService {
         if (existing == null) {
             throw new Exception("Rating nicht gefunden");
         }
-        if (existing.getUserId() == userId) {
-            throw new Exception("Eigenes Rating kann nicht geliked werden");
-        }
-
         try {
             ratingRepository.addLike(ratingId, userId);
         } catch (SQLException e) {

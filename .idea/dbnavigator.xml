@@ -41,10 +41,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
-      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/users" />
-      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/mediaentries" />
-      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/rating_likes" />
       <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/ratings" />
+      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/users" />
+      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/rating_likes" />
+      <object connection-id="4fffdce7-6082-4cec-a847-669749a575ef" object-ref="schemas/public/tables/mediaentries" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">

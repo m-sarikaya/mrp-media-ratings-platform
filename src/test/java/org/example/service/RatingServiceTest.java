@@ -115,8 +115,8 @@ public class RatingServiceTest {
     }
 
     @Test
-    void likeFailsForOwnRating() {
-        // Test: Eigenes Rating darf nicht geliked werden.
+    void likeOwnRatingAllowed() {
+        // Test: Eigenes Rating darf geliked werden.
         FakeRatingRepository repo = new FakeRatingRepository();
         Rating existing = new Rating();
         existing.setId(1);
@@ -124,8 +124,7 @@ public class RatingServiceTest {
         repo.save(existing);
 
         RatingService service = new RatingService(repo);
-        Exception ex = assertThrows(Exception.class, () -> service.likeRating(1, 1));
-        assertEquals("Eigenes Rating kann nicht geliked werden", ex.getMessage());
+        assertDoesNotThrow(() -> service.likeRating(1, 1));
     }
 
     @Test
